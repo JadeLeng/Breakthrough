@@ -174,6 +174,17 @@ class player:
 			else:
 				if minormax == define.MIN:
 					whoami = 3-whoami
+				get_me_alive = board.calculate_alive(whoami)
+				enemy_alive = board.calculate_alive(3-whoami)
+				if get_me_alive < 3:
+					# loseeeeeeee, can not choose this
+					return 0 + random.random()/5
+				if enemy_alive < 3:
+					# win!
+					return 3000 + random.random()/5
+				mydist = board.mydist(whoami, 1.3)
+				enemydist = board.mydist(3-whoami, 1.1)
+				return 5*(get_me_alive-enemy_alive) + (mydist - enemydist) + random.random()/5
 
 			
 

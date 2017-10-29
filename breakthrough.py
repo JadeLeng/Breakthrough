@@ -132,8 +132,8 @@ if __name__ == '__main__':
 	p2 = 0
 	total = 0
 	while (True):
-		player1 = player(define.RULE2, define.ALPHABETA, define.DEFENSIVE, 4, define.PLAYER_1, 2)
-		player2 = player(define.RULE2, define.ALPHABETA, define.OFFENSIVE, 4, define.PLAYER_2, 1)
+		player1 = player(define.RULE2, define.ALPHABETA, define.OFFENSIVE, 4, define.PLAYER_1, 2)
+		player2 = player(define.RULE2, define.ALPHABETA, define.DEFENSIVE, 4, define.PLAYER_2, 1)
 		game = breakthrough(player1, player2, define.PLAYER_TURN_1)
 		winner = game.begin()
 		if winner == 'player1':
