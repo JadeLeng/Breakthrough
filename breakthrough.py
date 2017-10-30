@@ -6,8 +6,8 @@ import define
 
 class breakthrough:
 	# tie = head/tail
-	def __init__(self, player1, player2, tie):
-		self.board = board()
+	def __init__(self, player1, player2, tie, boardtype):
+		self.board = board(boardtype)
 		self.player1 = player1
 		self.player2 = player2
 		self.turn = tie
@@ -15,7 +15,7 @@ class breakthrough:
 		self.winner = ''
 
 	def check_end(self):
-		if 1 in self.board.state[7]:
+		if 1 in self.board.state[self.board.length-1]:
 			self.end = True
 			self.winner = 'player1'
 		elif 2 in self.board.state[0]:
@@ -43,7 +43,7 @@ class breakthrough:
 			return
 
 		for x in range(self.board.width):
-			if self.board.state[self.board.width-1][x] == define.PLAYER_1:
+			if self.board.state[self.board.length-1][x] == define.PLAYER_1:
 				count_player1 += 1
 				if count_player1>=3:
 					self.end = True
@@ -54,6 +54,27 @@ class breakthrough:
 					self.end = True
 					self.winner = 'player2'
 
+	'''
+	def begin_pseudo(self):
+		while self.end is False:
+			if self.turn == define.PLAYER_TURN_1:
+				# player 1's turn to play
+				starttime = time()
+				nextmove = self.player1.move(self.board)
+				endtime = time()
+				self.player1.time += endtime - starttime
+				self.player1.step += 1
+				self.check_end()
+				self.turn = define.PLAYER_TURN_2
+			else:
+				# the same for player2
+			self.board.move(nextmove)
+			print (nextmove)
+			print (self.board.state)
+		# report the result
+		print ("The winner is: {}".format(self.winner))
+
+	'''
 
 
 	def begin(self):
@@ -64,7 +85,6 @@ class breakthrough:
 				starttime = time()
 				# get the next board
 				nextmove = self.player1.move(self.board)
-				#self.board.printnext(define.PLAYER_1, nextmove[0])
 				print (nextmove)
 				if nextmove is None:
 					self.end = True
@@ -75,7 +95,7 @@ class breakthrough:
 				self.board.move(nextmove[0],nextmove[1])
 				self.player1.step+=1
 				self.turn = define.PLAYER_TURN_2
-				self.check_end_3()
+				self.check_end()
 			else:
 				print ("Player_2's turn")
 				starttime = time()
@@ -83,7 +103,6 @@ class breakthrough:
 				nextmove = self.player2.move(self.board)
 				endtime = time()
 				self.player2.time += endtime - starttime
-				#self.board.printnext(define.PLAYER_2, nextmove[0])
 				print (nextmove)
 				if nextmove is None:
 					self.end = True
@@ -92,7 +111,7 @@ class breakthrough:
 				self.board.move(nextmove[0],nextmove[1])
 				self.player2.step+=1
 				self.turn = define.PLAYER_TURN_1
-				self.check_end_3()
+				self.check_end()
 			print (self.board.state)
 		print (self.board.state)
 		print ("Game Over! The winner is:")
@@ -132,9 +151,9 @@ if __name__ == '__main__':
 	p2 = 0
 	total = 0
 	while (True):
-		player1 = player(define.RULE2, define.ALPHABETA, define.OFFENSIVE, 4, define.PLAYER_1, 2)
-		player2 = player(define.RULE2, define.ALPHABETA, define.DEFENSIVE, 4, define.PLAYER_2, 1)
-		game = breakthrough(player1, player2, define.PLAYER_TURN_1)
+		player1 = player(define.RULE1, define.MINMAX, define.OFFENSIVE, 3, define.PLAYER_1, 1)
+		player2 = player(define.RULE1, define.ALPHABETA, define.OFFENSIVE, 4, define.PLAYER_2, 1)
+		game = breakthrough(player1, player2, define.PLAYER_TURN_1, define.SQUARE)
 		winner = game.begin()
 		if winner == 'player1':
 			p1 += 1
