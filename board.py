@@ -1,7 +1,21 @@
+# -*- encoding: utf-8 -*-
 from copy import deepcopy
 import numpy as np
 import define
 import math
+
+
+UNICODE_PIECES = {
+  '1' : u'♜', 'n': u'♞', 'b': u'♝', 'q': u'♛',
+  'k': u'♚', 1: u'♟', '2' : u'♖', 'N': u'♘',
+  'B': u'♗', 'Q': u'♕', 'K': u'♔', 2: u'♙',
+  
+  0 : ' '
+}
+
+AXIS_X = {0: 'A', 1 :'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H'}
+AXIS_Y = {'0': '8', '1' :'7', '2': '6', '3': '5', '4': '4', '5': '3', '6': '2', '7': '1'}
+
 
 class board:
 	def __init__(self, type):
@@ -41,6 +55,22 @@ class board:
 		self.capture1 = 0 # Number of captured player_1
 		self.capture2 = 0 # Number of captured player_2
 		self.changestep = []
+
+
+	def printboard(self):
+		for y in range(0, self.length):
+			s = " " + AXIS_Y[str(y)]
+			for x in range (0, self.width):
+				s += " " + UNICODE_PIECES[self.state[y][x]]
+			print (s)
+		s = "   "
+		for x in range(0, self.width):
+			s += " " + AXIS_X[x]
+		print (s)
+
+
+		
+
 		
 	def move_pseudo(self, curpos, nextpos):
 		# calculate the captured pieces
@@ -253,7 +283,7 @@ class board:
 	'''
 
 
-	def mydist(self, whoami, expo):
+	def mydist(self, whoami, expo, maxvalue=2048, nearlywinvalue=1024):
 		dist = 0
 		count = 0
 		for y in range(self.length):
@@ -264,17 +294,45 @@ class board:
 					if whoami is define.PLAYER_1:
 						dist+= math.pow(expo,y)
 						if y == self.length - 1:
-							return 2048
+							return maxvalue
 						if  y == self.length-2:
-							return 1024
+							return nearlywinvalue
 					else:
 						dist+= math.pow(expo,self.length-y+1)
 						if y== 0:
-							return 2048
+							return maxvalue
 						if y == 1:
-							return 1024
+							return nearlywinvalue
 					count += 1
 		return dist
+	'''
+	def mydist_3_pseudo(self, whoami, expo):
+		dist = 0
+		count = 0 # this is for efficiency to break the loop quickly
+		count_3 = 0 # determine the winning point
+		for y in range(self.length):
+			for x in range(self.width):
+				if self.state[y][x] == whoami:
+					if count == self.calculate_alive(whoami):
+						return dist
+					if whoami is define.PLAYER_1:
+						dist += math.pow(expo, y)
+						# definitely win
+						if y == self.length - 1:
+							count_3 += 1
+							dist += define.WINVALUE_3 # add some critical points to enforce the win
+							if count_3 == 3:
+								return define.WINVALUE
+						# nearly win
+						if y == self.length - 2:
+							dist += define.NEARWINVALUE_3 # same above
+					else:
+						# the same with Player_2
+				count += 1
+		return dist
+		'''
+
+
 
 	def mydist_3(self, whoami, expo):
 		dist = 0

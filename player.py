@@ -15,6 +15,7 @@ class player:
 		self.node = 0
 		self.type = type
 		self.rule = rule
+		self.leave = 0
 
 	def move(self, board):
 		if self.strategy is define.MINMAX:
@@ -93,10 +94,6 @@ class player:
 		for b in boards:
 			queue.append(self.minmax(b, depth+1, 1-minormax, 3-whoami))
 		queue = sorted(queue)
-		
-		
-			
-
 		# print (queue)
 		if minormax is define.MAX:
 			return queue[-1]
@@ -156,6 +153,7 @@ class player:
 			else:
 				h = self.heursic_offensive(board, minormax, whoami, self.type)
 			#print ("ab_max:",board.changestep)
+			self.leave += 1
 			return (h, board)
 
 		boards = board.next(whoami)
@@ -169,6 +167,7 @@ class player:
 			else:
 				h = self.heursic_offensive(board, minormax, whoami, self.type)
 			#print ("ab_max:",board.changestep)
+			self.leave+=1
 			return (h, board)
 		self.node += 1
 
@@ -205,12 +204,26 @@ class player:
 			get_alive = board.calculate_alive(whoami)
 			return 2 * get_alive + random.random()
 		elif type is 2:
-			get_me_alive = board.calculate_alive(whoami)
-			enemy_alive = board.calculate_alive(3-whoami)
-			mydist = board.mydist(whoami, 1.1)
-			enemydist = board.mydist(3-whoami, 1.3)
-			myhomestate = board.homestate(whoami)
-			return 18 * (get_me_alive-enemy_alive) + 3 * ( mydist-enemydist) + 1.2*myhomestate + random.random()
+			if self.rule == define.RULE1:
+				get_me_alive = board.calculate_alive(whoami)
+				enemy_alive = board.calculate_alive(3-whoami)
+				mydist = board.mydist(whoami, 1.1)
+				enemydist = board.mydist(3-whoami, 1.3)
+				myhomestate = board.homestate(whoami)
+				return 18 * (get_me_alive-enemy_alive) + 3 * ( mydist-enemydist) + 1.2*myhomestate + random.random()
+			elif self.rule == define.RULE2:
+				get_me_alive = board.calculate_alive(whoami)
+				enemy_alive = board.calculate_alive(3-whoami)
+				if get_me_alive < 3:
+					# lose, should not be in this situation
+					return define.LOSEVALUE + random.random()/5
+				if enemy_alive < 3:
+					# win return winvalue to make sure choose this
+					return define.WINVALUE + random.random()/5
+				mydist = board.mydist_3(3-whoami, 1.1)
+				enemydist = board.mydist_3(3-whoami, 1.2)
+				myhomestate = board.homestate(whoami)
+				return 5*(get_me_alive-enemy_alive) + mydist - enemydist + 1.2*myhomestate + random.random()/5
 
 
 	def heursic_offensive_pseudo(self, board, layer, whoami, type):
@@ -221,11 +234,25 @@ class player:
 			get_alive = board.calculate_alive(3 - whoami)
 			return 2 * (30 - get_alive) + random.random()
 		elif type is 2:
-			get_enemy_alive = board.calculate_alive(3-whoami)
-			get_me_alive = board.calculate_alive(whoami)
-			mydist = board.mydist(whoami,1.3)
-			enemydist = board.mydist(3-whoami, 1.3)
-			return 10 * ( -get_enemy_alive + get_me_alive) + 2 * (mydist - enemydist) + random.random()
+			if self.rule == define.RULE1:
+				get_enemy_alive = board.calculate_alive(3-whoami)
+				get_me_alive = board.calculate_alive(whoami)
+				mydist = board.mydist(whoami,1.3)
+				enemydist = board.mydist(3-whoami, 1.3)
+				return 10 * (30 - 0.5 * get_enemy_alive + get_me_alive) + 2 * ( 1.1 * mydist - enemydist) + random.random()
+			elif self.rule == define.RULE2:
+				get_me_alive = board.calculate_alive(whoami)
+				enemy_alive = board.calculate_alive(3-whoami)
+				if get_me_alive < 3:
+					# lose, should not be in this situation
+					return define.LOSEVALUE + random.random()/5
+				if enemy_alive < 3:
+					# win return winvalue to make sure choose this
+					return define.WINVALUE + random.random()/5
+				mydist = board.mydist_3(whoami, 1.3)
+				enemydist = board.mydist_3(3-whoami, 1.1)
+				return 5 * (get_me_alive-enemy_alive) + (mydist - enemydist) + random.random()/5
+
 
 
 
@@ -247,26 +274,19 @@ class player:
 
 			if self.rule == define.RULE1:
 
-				if minormax is define.MAX:
+				if minormax is define.MIN:
+					whoami = 3-whoami
 
-					get_me_alive = board.calculate_alive(whoami)
-					enemy_alive = board.calculate_alive(3-whoami)
-					mydist = board.mydist(whoami, 1.1)
-					enemydist = board.mydist(3-whoami, 1.3)
-					myhomestate = board.homestate(whoami)
 
-					return 18 * (get_me_alive-enemy_alive) + 3 * ( mydist-enemydist) + 1.2*myhomestate + random.random()
+				get_me_alive = board.calculate_alive(whoami)
+				enemy_alive = board.calculate_alive(3-whoami)
+				mydist = board.mydist(whoami, 1.1)
+				enemydist = board.mydist(3-whoami, 1.3)
+				myhomestate = board.homestate(whoami)
+				return 18 * (get_me_alive-enemy_alive) + 3 * ( mydist-enemydist) + 1.2*myhomestate + random.random()
 
 
 					
-				else:
-					get_me_alive = board.calculate_alive(3-whoami)
-					enemy_alive = board.calculate_alive(whoami)
-					mydist = board.mydist(3-whoami, 1.1)
-					enemydist = board.mydist(3-whoami, 1.3)
-					myhomestate = board.homestate(3-whoami)
-
-					return 18 * (get_me_alive-enemy_alive) + 3 * ( mydist-enemydist) +1.2*myhomestate+ random.random()
 			elif self.rule == define.RULE2:
 				if minormax == define.MIN:
 					whoami = 3-whoami
@@ -314,26 +334,20 @@ class player:
 		elif type == 2:
 			if self.rule == define.RULE1:
 				# minimize my opponent's pieces
-				if minormax == define.MAX:
+				if minormax == define.MIN:
+					whoami = 3 - whoami
 					
 
-					get_enemy_alive = board.calculate_alive(3-whoami)
-					get_me_alive = board.calculate_alive(whoami)
+				get_enemy_alive = board.calculate_alive(3-whoami)
+				get_me_alive = board.calculate_alive(whoami)
 
-					mydist = board.mydist(whoami,1.3)
-					enemydist = board.mydist(3-whoami, 1.3)
+				mydist = board.mydist(whoami,1.3)
+				enemydist = board.mydist(3-whoami, 1.1)
+				return 10 * (30 - 0.5 * get_enemy_alive + get_me_alive) + 2 * ( 1.1 * mydist - enemydist) + random.random()
 
-					return 10*(-get_enemy_alive + get_me_alive) + 2*(mydist-enemydist) + random.random()
+				return 10*(-get_enemy_alive + get_me_alive) + 2*(mydist-enemydist) + random.random()
 
-				else:
-					
-					get_enemy_alive = board.calculate_alive(whoami)
-					get_me_alive = board.calculate_alive(3-whoami)
-
-					mydist = board.mydist(3-whoami,1.3)
-					enemydist = board.mydist(whoami,1.3)
-
-					return 10*(-get_enemy_alive + get_me_alive) + 2*(mydist-enemydist) + random.random()
+				
 			elif self.rule == define.RULE2:
 				if minormax == define.MIN:
 					whoami = 3-whoami
@@ -351,16 +365,19 @@ class player:
 			else:
 				if minormax == define.MIN:
 					whoami = 3-whoami
-				# to beat the defensive guy, just keep the most distant track as possible as you can, do not really care how many I'll be eaten!
-				myhomestate = board.homestate(3-whoami)
+				# to beat the defensive guy, just keep the most distant track as possible as you can, 
+				# do not really care how many I'll be eaten!
 				mydist = board.mydist(whoami, 2)
 				enemydist = board.mydist(3-whoami, 2)
 				get_me_alive = board.calculate_alive(whoami)
 				enemy_alive = board.calculate_alive(3-whoami)
+
+				return (mydist - 0.9 * enemydist) + 3 * (0.5 * enemy_alive + get_me_alive) + random.random()
+
 				return 2 * (mydist - 0.9 * enemydist) + 5*(get_me_alive-enemy_alive) + random.random()/5
 
 
-			
+	'''		
 
 	def ab_max(self, board, depth, minormax, minv, maxv, whoami):
 		# self.node += 1
@@ -378,11 +395,9 @@ class player:
 		ret_board = None
 		temp_max = -np.inf
 		self.node += 1
-		'''
-		for b in boards:
-			print (b.state)
-			print (b.changestep)
-		'''
+		
+		
+		
 		if len(boards) == 0:
 			if self.attack == define.DEFENSIVE:
 				h = self.heursic_defensive(board, minormax, whoami, self.type)
@@ -410,6 +425,7 @@ class player:
 			print ("Panic, ab_max is returning None", depth,len(boards))
 			print (board.state)
 		return ret_board
+	'''
 
 	def ab_min(self, board, depth, minormax, minv, maxv, whoami):
 		
@@ -423,6 +439,7 @@ class player:
 				#print ("!!!!")
 				h = self.heursic_offensive(board, minormax, whoami, self.type)
 			#print ("ab_min:",board.changestep)
+			self.leave += 1
 			return (h, board)
 		self.node += 1
 		boards = board.next(whoami)
@@ -433,6 +450,7 @@ class player:
 			else:
 				h = self.heursic_offensive(board, minormax, whoami, self.type)
 			#print ("ab_max:",board.changestep)
+			self.leave += 1
 			return (h, board)
 
 		ret_board = None
