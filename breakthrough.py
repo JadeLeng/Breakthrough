@@ -163,11 +163,8 @@ class breakthrough:
 				self.check_end()
 			else:
 				print ("Your turn, plz enter the chosen position:")
-				
-
 				starttime = time()
 				cur = input(">>> ")
-				# print (cur)
 				posx = TOINT[cur[0]]
 				posy = 8 - int(cur[1])
 				print (posy, posx,self.board.state[posy][posx])
@@ -233,8 +230,8 @@ if __name__ == '__main__':
 	p2 = 0
 	total = 0
 	while (True):
-		player1 = player(define.RULE1, define.ALPHABETA, define.DEFENSIVE, 4, define.PLAYER_1, 2)
-		player2 = player(define.RULE1, define.ALPHABETA, define.DEFENSIVE, 4, define.PLAYER_2, 1)
+		player1 = player(define.RULE2, define.ALPHABETA, define.DEFENSIVE, 4, define.PLAYER_1, 2)
+		player2 = player(define.RULE2, define.ALPHABETA, define.OFFENSIVE, 4, define.PLAYER_2, 1)
 		game = breakthrough(player1, player2, define.PLAYER_TURN_1, define.SQUARE)
 		game.board.printboard()
 		winner = game.begin()
